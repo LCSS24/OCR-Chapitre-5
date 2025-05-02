@@ -1,6 +1,8 @@
 const express = require("express");
-const router = express.Router();
+const auth = require("../middlewares/auth")
 const stuffCtrl = require("../controllers/stuff")
+const router = express.Router();
+const multer = require("../middlewares/multer-config")
 
 //Renvoie un tableau de tous les livres de la base de données
 router.get("/", stuffCtrl.getAllBooks)
@@ -13,15 +15,15 @@ router.get("/:id", stuffCtrl.getOneBook)
 
 // Capture et enregistre l'image, analyse le livretransformé en chaîne de caractères, et l'enregistre dans la base
 // de données en définissant correctement son ImageUrl.
-router.post("/", stuffCtrl.createBook)
+router.post("/", auth, multer, stuffCtrl.createBook)
 
 // Définit la note pour le user ID fourni
-router.post("/:id/rating", stuffCtrl.rateBook)
+router.post("/:id/rating", auth, stuffCtrl.rateBook)
 
 //Met a jour le livre avec l'_id fourni
-router.put("/:id", stuffCtrl.modifyBook)
+router.put("/:id", auth, multer, stuffCtrl.modifyBook)
 
-//Supprime le libre avec l'_id fourni
-router.delete("/:id", stuffCtrl.deleteBook)
+//Supprime le livre avec l'_id fourni
+router.delete("/:id", auth, stuffCtrl.deleteBook)
 
 module.exports = router;
