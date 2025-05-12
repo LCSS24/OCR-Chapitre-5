@@ -26,9 +26,12 @@ exports.modifyBook = (req, res, next) => {
             if (book.userId != req.auth.userId) {
                 res.status(400).json({ message: "Non autorisé" })
             } else {
-                Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
-                    .then(() => res.status(200).json({ message: "Objet modifié" }))
-                    .catch(error => res.status(400).json({ error }))
+                const filename = book.imageUrl.split("/images/")[1];
+                fs.unlink(`images/${filename}`, () => {
+                    Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
+                        .then(() => res.status(200).json({ message: "Objet modifié" }))
+                        .catch(error => res.status(400).json({ error }))
+                })
             }
         })
         .catch((error) => { res.status(400).json({ error }) })
@@ -56,14 +59,32 @@ exports.deleteBook = (req, res, next) => {
 
 exports.rateBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
-        .then(book => res.status(200).json(book.ratings.grade))
-        .catch(error => res.status(404).json("ERREUR AHAHAHAH"))
+        .then(book => {
+            //Ajoute la nouvelle note
+            book.ratings.push({
+                userId: req.auth.userId,
+                grade: req.body.rating
+            });
+            // Calcule la moyenne
+            const somme = book.ratings.reduce((acc, curr) => acc + curr.grade, 0);
+            book.averageRating = somme / book.ratings.length;
 
-
+            book.save()
+                .then(updatedBook => res.status(200).json(updatedBook))
+                .catch(error => res.status(400).json({ error }));
+        })
+        .catch(error => res.status(404).json({ error }))
 }
 
 exports.bestRating = (req, res, next) => {
-    res.status(999).json({ message: "Tableau des 3 meilleurs livres" })
+    Book.find()
+        .then(books => {
+            const bestBooks = books
+                .sort((a, b) => b.averageRating - a.averageRating)
+                .slice(0, 3)
+            res.status(200).json(bestBooks)
+        })
+        .catch(error => res.status(404).json({ error }))
 }
 
 exports.getOneBook = (req, res, next) => {
