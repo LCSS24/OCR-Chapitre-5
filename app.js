@@ -1,5 +1,4 @@
 require("dotenv").config(); // Pour charger les variables d'environnement depuis le fichier .env
-console.log("MONGO_URI =", process.env.MONGO_URI);
 // Import des modules nécessaires
 const express = require("express"); // Pour créer l'application Express
 const mongoose = require("mongoose"); // Pour gérer la connexion à MongoDB
