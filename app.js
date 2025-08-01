@@ -40,8 +40,4 @@ app.use("/api/books", bookRoutes); // Route pour les livres
 app.use("/api/auth", userRoutes); // Route pour l'authentification
 app.use("/images", express.static(path.join(__dirname, "images"))); // Middleware pour permettre au frontend d'accéder aux images
 
-app.get("/ping", (req, res) => {
-  res.send("pong");
-});
-
 module.exports = app;
